@@ -9,19 +9,33 @@ import chat.exception.ClientAlreadyRegisteredException;
 import chat.server.Server;
 
 public class Main {
+
+  public static Scanner sc = new Scanner(System.in);
+
   public static void main(String[] args) throws RemoteException, NotBoundException {
     System.out.println("Welcome to our distributed chat!");
     var registry = LocateRegistry.getRegistry(9001);
     var server = (Server) registry.lookup("RMIChat");
 
-    String client = initializeClient(server);
+    String clientId = initializeClient(server);
+    while (true) {
+      String line = sc.nextLine();
+      String[] tokens = line.split(" ");
+      String command = tokens[0];
+      if (command.equals("leave")) {
+        break;
+      } else if (command.equals("send")) {
 
-    server.disconnect(client);
+      } else {
+        System.out.println("Invalid command");
+      }
+    }
+
+    server.disconnect(clientId);
   }
 
   private static String initializeClient(Server server) throws RemoteException {
     String clientName = "", aux;
-    Scanner sc = new Scanner(System.in);
     while (clientName.isEmpty()) {
       System.out.print("Please, insert your username: ");
       aux = sc.nextLine();
@@ -32,7 +46,6 @@ public class Main {
         System.out.println("It seems this username is already taken by an active user. Please, choose another.");
       }
     }
-    sc.close();
     return clientName;
   }
 
