@@ -8,6 +8,8 @@ import chat.exception.ClientAlreadyRegisteredException;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
   private List<String> clients = new ArrayList<>();
+  private List<String> messages = new ArrayList<>();
+  private List<String> syncClient = new ArrayList<>();
 
   public ServerImpl() throws RemoteException {
     super();
@@ -28,9 +30,18 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     System.out.println("Client " + clientName + " has disconnected.");
   }
 
-  @Override
-  public void sendMessage(String from, String to) throws RemoteException {
-
+  public void sendMessage(String message, String client) throws RemoteException {
+    messages.add(message);
+    syncClient.add(client);
+  }
+  public String transmitMessage() throws RemoteException {
+    if (messages.size() != 0) {
+      String message = syncClient.get(0) + ": " +messages.get(0);
+      messages.remove(0);
+      syncClient.remove(0);
+      return message;
+    }
+    return null;
   }
 
   private boolean clientExists(String name) {

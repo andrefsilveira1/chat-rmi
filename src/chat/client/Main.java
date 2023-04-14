@@ -19,13 +19,21 @@ public class Main {
 
     String clientId = initializeClient(server);
     while (true) {
+      System.out.print("You-> ");
       String line = sc.nextLine();
       String[] tokens = line.split(" ");
       String command = tokens[0];
+      String receivedMessage = server.transmitMessage();
+      if (receivedMessage != null) {
+        System.out.println(receivedMessage);
+      }
       if (command.equals("leave")) {
+        System.out.println("Disconnecting...");
         break;
       } else if (command.equals("send")) {
-
+        if(tokens[1] != null) {
+          server.sendMessage(tokens[1], clientId);
+        }
       } else {
         System.out.println("Invalid command");
       }
@@ -48,5 +56,4 @@ public class Main {
     }
     return clientName;
   }
-
 }

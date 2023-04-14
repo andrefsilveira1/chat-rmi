@@ -13,6 +13,9 @@ public interface Server extends Remote {
   public void disconnect(String clientName) throws RemoteException;
 
   // Sends a message to a particular user
-  public void sendMessage(String from, String to) throws RemoteException;
+  public void sendMessage(String message, String client) throws RemoteException;
+
+  // Send the message for the Client
+  public String transmitMessage() throws RemoteException;
 
 }
