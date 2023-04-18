@@ -1,14 +1,11 @@
 package chat.client;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import chat.exception.ClientAlreadyRegisteredException;
 import chat.server.Server;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,8 +14,9 @@ public class Main {
 
   public static Scanner sc = new Scanner(System.in);
   public static String newMessage;
+  public static boolean checked = true;
 
-  public static void main(String[] args) throws RemoteException, NotBoundException {
+  public synchronized static void main(String[] args) throws RemoteException, NotBoundException {
     System.out.println("Welcome to our distributed chat!");
     var registry = LocateRegistry.getRegistry(9001);
     var server = (Server) registry.lookup("RMIChat");
@@ -30,6 +28,7 @@ public class Main {
       String command = tokens[0];
       new Thread(new printThread(server, clientId)).start();
       if (command.equals("leave")) {
+        checked = false;
         System.out.println("Disconnecting...");
         break;
       } else if (command.equals("send")) {
@@ -44,19 +43,7 @@ public class Main {
     server.disconnect(clientId);
   }
 
-  private static String formatMessage(String[] messages, String clientId) {
-    StringBuilder builder = new StringBuilder();
-    for (String value : messages) {
-      if(value.indexOf(clientId) == -1) {
-        builder.append(value);
-      }else {
-        builder.append(value.replace(clientId, "You: "));
-      }
-    }
-    String text = builder.toString();
-    return text.stripTrailing();
-  }
-
+  @SuppressWarnings("unchecked")
   private static class printThread implements Runnable {
     private Server server;
     private String clientId;
@@ -73,18 +60,17 @@ public class Main {
     @Override
     public void run() {
         try {
-          while (true) {
-            String[] receivedMessage = server.transmitMessage();
-            if(receivedMessage != null) {
-              newMessage = formatMessage(receivedMessage, clientId);
-              if(!storyMessages.contains(newMessage)) {
-                System.out.println(newMessage);
-                storyMessages.add(newMessage);
+          while (checked) {
+            String receivedMessage = server.transmitMessage();
+            if(receivedMessage != null && !receivedMessage.startsWith(clientId)) {
+              synchronized (storyMessages) {
+                if(storyMessages.add(receivedMessage)) {
+                  System.out.println(receivedMessage);
+                }
               }
             }
-            Thread.sleep(3000);
           }
-        } catch (InterruptedException  | RemoteException error) {
+        } catch (RemoteException error) {
           System.out.println("Something goes wrong... " + error);
         }
       }

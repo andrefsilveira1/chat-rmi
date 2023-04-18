@@ -29,14 +29,15 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     System.out.println("Client " + clientName + " has disconnected.");
   }
 
-  public void sendMessage(String message, String client) throws RemoteException {
-    String receivedMessage = client + ": "+ message + "\n";
+  public synchronized void sendMessage(String message, String client) throws RemoteException {
+    String receivedMessage = client + ":"+ message;
     messages.add(receivedMessage);
   }
 
-  public String[] transmitMessage() throws RemoteException {
+  public synchronized String transmitMessage() throws RemoteException {
     if (messages.size() != 0) {
-      String[] allMessages = messages.toArray(new String[0]);
+//      String[] allMessages = messages.toArray(new String[0]);
+      String allMessages = messages.get(messages.size() -1);
       return allMessages;
     }
     return null;

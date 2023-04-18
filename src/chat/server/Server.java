@@ -16,6 +16,6 @@ public interface Server extends Remote {
   public void sendMessage(String message, String client) throws RemoteException;
 
   // Send the message for the Client
-  public String[] transmitMessage() throws RemoteException;
+  public String transmitMessage() throws RemoteException;
 
 }
