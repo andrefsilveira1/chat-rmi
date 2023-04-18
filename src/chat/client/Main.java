@@ -17,7 +17,7 @@ public class Main {
     var registry = LocateRegistry.getRegistry(9001);
     var server = (Server) registry.lookup("RMIChat");
 
-    String clientId = initializeClient(server);
+    ClientImpl c = initializeClient(server);
     while (true) {
       String line = sc.nextLine();
       String[] tokens = line.split(" ");
@@ -31,10 +31,10 @@ public class Main {
       }
     }
 
-    server.disconnect(clientId);
+    server.disconnect(c.getName());
   }
 
-  private static String initializeClient(Server server) throws RemoteException {
+  private static ClientImpl initializeClient(Server server) throws RemoteException {
     String clientName = "", aux;
     while (clientName.isEmpty()) {
       System.out.print("Please, insert your username: ");
@@ -46,7 +46,6 @@ public class Main {
         System.out.println("It seems this username is already taken by an active user. Please, choose another.");
       }
     }
-    return clientName;
+    return new ClientImpl(clientName);
   }
-
 }

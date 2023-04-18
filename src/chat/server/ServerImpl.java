@@ -4,6 +4,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+
+import chat.client.Client;
 import chat.exception.ClientAlreadyRegisteredException;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
@@ -29,7 +31,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
   }
 
   @Override
-  public void sendMessage(String from, String to) throws RemoteException {
+  public void sendMessage(String from, String to, String msg) throws RemoteException {
 
   }
 
