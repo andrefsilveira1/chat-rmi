@@ -1,12 +1,15 @@
 package chat.server;
 
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.List;
 
-import chat.client.Client;
 import chat.exception.ClientAlreadyRegisteredException;
+import chat.exception.ClientNotFoundException;
+import chat.client.Client;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
   private List<String> clients = new ArrayList<>();
@@ -31,8 +34,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
   }
 
   @Override
-  public void sendMessage(String from, String to, String msg) throws RemoteException {
-
+  public void sendMessage(String from, String to, String msg)
+      throws RemoteException, ClientNotFoundException, NotBoundException {
+    if (!clientExists(to)) {
+      throw new ClientNotFoundException();
+    }
+    var registry = LocateRegistry.getRegistry(9001);
+    Client c = (Client) registry.lookup(to);
+    c.send(from, msg);
   }
 
   private boolean clientExists(String name) {
