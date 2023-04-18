@@ -9,7 +9,6 @@ import chat.exception.ClientAlreadyRegisteredException;
 public class ServerImpl extends UnicastRemoteObject implements Server {
   private List<String> clients = new ArrayList<>();
   private List<String> messages = new ArrayList<>();
-  private List<String> syncClient = new ArrayList<>();
 
   public ServerImpl() throws RemoteException {
     super();
@@ -31,15 +30,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
   }
 
   public void sendMessage(String message, String client) throws RemoteException {
-    messages.add(message);
-    syncClient.add(client);
+    String receivedMessage = client + ": "+ message + "\n";
+    messages.add(receivedMessage);
   }
-  public String transmitMessage() throws RemoteException {
+
+  public String[] transmitMessage() throws RemoteException {
     if (messages.size() != 0) {
-      String message = syncClient.get(0) + ": " +messages.get(0);
-      messages.remove(0);
-      syncClient.remove(0);
-      return message;
+      String[] allMessages = messages.toArray(new String[0]);
+      return allMessages;
     }
     return null;
   }

@@ -4,13 +4,19 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
-
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import chat.exception.ClientAlreadyRegisteredException;
 import chat.server.Server;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class Main {
 
   public static Scanner sc = new Scanner(System.in);
+  public static String newMessage;
 
   public static void main(String[] args) throws RemoteException, NotBoundException {
     System.out.println("Welcome to our distributed chat!");
@@ -19,20 +25,16 @@ public class Main {
 
     String clientId = initializeClient(server);
     while (true) {
-      System.out.print("You-> ");
       String line = sc.nextLine();
       String[] tokens = line.split(" ");
       String command = tokens[0];
-      String receivedMessage = server.transmitMessage();
-      if (receivedMessage != null) {
-        System.out.println(receivedMessage);
-      }
+      new Thread(new printThread(server, clientId)).start();
       if (command.equals("leave")) {
         System.out.println("Disconnecting...");
         break;
       } else if (command.equals("send")) {
         if(tokens[1] != null) {
-          server.sendMessage(tokens[1], clientId);
+          server.sendMessage(line.replace("send", ""), clientId);
         }
       } else {
         System.out.println("Invalid command");
@@ -41,6 +43,52 @@ public class Main {
 
     server.disconnect(clientId);
   }
+
+  private static String formatMessage(String[] messages, String clientId) {
+    StringBuilder builder = new StringBuilder();
+    for (String value : messages) {
+      if(value.indexOf(clientId) == -1) {
+        builder.append(value);
+      }else {
+        builder.append(value.replace(clientId, "You: "));
+      }
+    }
+    String text = builder.toString();
+    return text.stripTrailing();
+  }
+
+  private static class printThread implements Runnable {
+    private Server server;
+    private String clientId;
+    private String receivedMessage;
+    private Set<String> storyMessages;
+
+    public printThread(Server server, String clientId) throws RemoteException {
+      this.server = server;
+      this.clientId = clientId;
+      this.receivedMessage = receivedMessage;
+      this.storyMessages = new HashSet();
+    }
+
+    @Override
+    public void run() {
+        try {
+          while (true) {
+            String[] receivedMessage = server.transmitMessage();
+            if(receivedMessage != null) {
+              newMessage = formatMessage(receivedMessage, clientId);
+              if(!storyMessages.contains(newMessage)) {
+                System.out.println(newMessage);
+                storyMessages.add(newMessage);
+              }
+            }
+            Thread.sleep(3000);
+          }
+        } catch (InterruptedException  | RemoteException error) {
+          System.out.println("Something goes wrong... " + error);
+        }
+      }
+  };
 
   private static String initializeClient(Server server) throws RemoteException {
     String clientName = "", aux;
