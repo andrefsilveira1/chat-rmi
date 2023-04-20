@@ -25,6 +25,7 @@ public class Main {
       String[] tokens = line.split(" ");
       String command = tokens[0];
       if (command.equals("leave")) {
+        System.out.println("Disconecting...");
         break;
       } else if (command.equals("send")) {
         String to = tokens[1];
